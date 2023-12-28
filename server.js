@@ -1,13 +1,39 @@
 import express from 'express';
+import morgan from 'morgan';
+import createError from 'http-errors';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
+import './src/utilities/initializers/mongodb.js';
 
-dotenv.config();
+import {authenticationRoutes} from "./src/routes/authentication.js";
+import env from "./src/config/env.js";
+
 
 const server = express();
 
-mongoose.connect(process.env.DB_ADDRESS)
-    .then((_) => server.listen(process.env.PORT))
-    .catch((error) => console.log(error));
+// middlewares
+server.use(express.json());
+server.use(morgan('dev'));
 
 
+server.use('/auth', authenticationRoutes);
+
+server.use(async (req, res, next) => {
+    const error = new Error('Not found');
+    error.status = 404;
+    next(error);
+});
+
+server.use((err, req, res, next) => {
+    res.status(err.status || 500);
+    req.send({
+        error: {
+            status: err.status || 500,
+            message: err.message,
+        },
+    });
+});
+
+const port = env.PORT || 3000;
+server.listen(port, (_) => {
+    console.log(`Server running on port ${port}`);
+});
