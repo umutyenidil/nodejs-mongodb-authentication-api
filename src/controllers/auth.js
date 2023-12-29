@@ -3,7 +3,7 @@ import createError from "http-errors";
 import UserModel from "../models/user/user.js";
 import validationErrorHandler from "../utilities/error-handlers/validation.js";
 import userValidation from "../utilities/validations/auth.js";
-import {signAccessToken} from "../utilities/helpers/token.js";
+import {generateSignAccessToken} from "../utilities/helpers/token.js";
 
 
 const postRegister = async (req, res, next) => {
@@ -25,7 +25,7 @@ const postRegister = async (req, res, next) => {
 
         const user = await newUser.save();
 
-        const accessToken = await signAccessToken(user.id);
+        const accessToken = await generateSignAccessToken(user.id);
 
         return res.status(201).json({
             accessToken,
@@ -56,7 +56,7 @@ const postLogin = async (req, res, next) => {
 
         if(!isMatch) throw createError.Unauthorized('email address or password not valid');
 
-        const accessToken = await signAccessToken(user.id);
+        const accessToken = await generateSignAccessToken(user.id);
 
         res.send({accessToken});
 

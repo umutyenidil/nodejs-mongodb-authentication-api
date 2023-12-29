@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import createError from "http-errors";
 import env from "../../config/env.js";
 
-const signAccessToken = (userId) => {
+const generateSignAccessToken = (userId) => {
     return new Promise((resolve, reject) => {
         const payload = {};
 
@@ -26,6 +26,19 @@ const signAccessToken = (userId) => {
     });
 };
 
+const verifyAccessToken = (token) => {
+    return new Promise((resolve, reject) => {
+        jwt.verify(token, env.ACCESS_TOKEN_SECRET, (error, payload) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(payload);
+            }
+        });
+    });
+};
+
 export {
-    signAccessToken,
+    generateSignAccessToken,
+    verifyAccessToken,
 };

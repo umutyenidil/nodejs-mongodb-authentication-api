@@ -5,16 +5,20 @@ import mongoose from 'mongoose';
 import './src/utilities/initializers/mongodb.js';
 
 import {authenticationRoutes} from "./src/routes/auth.js";
+import {checkAccessToken} from "./src/middlewares/auth.js";
 import env from "./src/config/env.js";
 
 
 const server = express();
 
-// middlewares
+// tool middlewares
 server.use(express.json());
 server.use(express.urlencoded({extended: true}));
 server.use(morgan('dev'));
 
+server.get('/', checkAccessToken, async(req, res, next)=>{
+   res.send({message:'test'});
+});
 
 server.use('/auth', authenticationRoutes);
 
