@@ -1,8 +1,8 @@
-import passwordHelper from "../../utilities/helpers/password.js";
+import {encodePassword} from "../../utilities/helpers/password.js";
 
 const preSave = async function (next) {
     try {
-        this.password = await passwordHelper.encodePassword(this.password);
+        this.password = await encodePassword(this.password);
         next();
     } catch (error) {
         next(error);

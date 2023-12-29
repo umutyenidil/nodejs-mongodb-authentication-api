@@ -6,6 +6,11 @@ const encodePassword = async (password) => {
     return await bcrypt.hash(password, generatedSalt);
 };
 
-export default {
-    encodePassword
+const comparePassword = async ({password, truePassword}) => {
+    return await bcrypt.compare(password, truePassword);
+};
+
+export {
+    encodePassword,
+    comparePassword,
 };

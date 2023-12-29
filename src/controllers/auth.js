@@ -2,7 +2,7 @@ import createError from "http-errors";
 
 import UserModel from "../models/user/user.js";
 import validationErrorHandler from "../utilities/error-handlers/validation.js";
-import userValidation from "../utilities/validations/user.js";
+import userValidation from "../utilities/validations/auth.js";
 import {signAccessToken} from "../utilities/helpers/token.js";
 
 
@@ -44,11 +44,28 @@ const postRegister = async (req, res, next) => {
     }
 };
 
-const postLogin = async (req, res) => {
+const postLogin = async (req, res, next) => {
     try {
+        const result = await userValidation.loginValidator.validateAsync(req.body);
+
+        const user = await UserModel.findOne({emailAddress: result.emailAddress});
+
+        if(!user) throw createError.NotFound("user not registered");
+
+        const isMatch = await user.isValidPassword(result.password);
+
+        if(!isMatch) throw createError.Unauthorized('email address or password not valid');
+
+        const accessToken = await signAccessToken(user.id);
+
+        res.send({accessToken});
 
     } catch (error) {
+        if (error.isJoi === true) {
+            next(createError.BadRequest('Invalid email address or password'));
+        }
 
+        next(error);
     }
 };
 

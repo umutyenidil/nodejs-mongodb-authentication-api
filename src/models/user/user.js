@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import validator from 'validator';
 import {postSave, preSave} from "./hooks.js";
+import {isValidPassword} from "./methods.js";
 
 const userSchema = new mongoose.Schema({
     emailAddress: {
@@ -17,8 +18,12 @@ const userSchema = new mongoose.Schema({
     },
 });
 
+// hooks
 userSchema.pre('save', preSave);
 userSchema.post('save', postSave);
+
+// methods
+userSchema.methods.isValidPassword = isValidPassword;
 
 const UserModel = mongoose.model('User', userSchema);
 

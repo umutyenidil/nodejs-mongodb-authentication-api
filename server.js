@@ -4,7 +4,7 @@ import createError from 'http-errors';
 import mongoose from 'mongoose';
 import './src/utilities/initializers/mongodb.js';
 
-import {authenticationRoutes} from "./src/routes/authentication.js";
+import {authenticationRoutes} from "./src/routes/auth.js";
 import env from "./src/config/env.js";
 
 
