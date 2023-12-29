@@ -12,6 +12,7 @@ const server = express();
 
 // middlewares
 server.use(express.json());
+server.use(express.urlencoded({extended: true}));
 server.use(morgan('dev'));
 
 
@@ -25,7 +26,7 @@ server.use(async (req, res, next) => {
 
 server.use((err, req, res, next) => {
     res.status(err.status || 500);
-    req.send({
+    return res.json({
         error: {
             status: err.status || 500,
             message: err.message,

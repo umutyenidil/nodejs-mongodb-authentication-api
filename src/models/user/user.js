@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import validator from 'validator';
-import {preSave} from "./_hooks.js";
+import {postSave, preSave} from "./hooks.js";
 
 const userSchema = new mongoose.Schema({
     emailAddress: {
@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre('save', preSave);
+userSchema.post('save', postSave);
 
 const UserModel = mongoose.model('User', userSchema);
 
