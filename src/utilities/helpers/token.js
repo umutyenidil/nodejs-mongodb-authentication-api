@@ -62,9 +62,24 @@ const signRefreshToken = (userId) => {
     });
 };
 
+const verifyRefreshToken = (token) => {
+    return new Promise((resolve, reject) => {
+        jwt.verify(token, env.REFRESH_TOKEN_SECRET, (error, payload) => {
+            if (error) {
+                reject(createError.Unauthorized());
+            } else {
+                const userId = payload.aud;
+
+                resolve(userId);
+            }
+        });
+    });
+};
+
 
 export {
     signAccessToken,
     verifyAccessToken,
     signRefreshToken,
+    verifyRefreshToken,
 };

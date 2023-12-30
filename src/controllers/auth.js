@@ -3,7 +3,7 @@ import createError from "http-errors";
 import UserModel from "../models/user/user.js";
 import validationErrorHandler from "../utilities/error-handlers/validation.js";
 import userValidation from "../utilities/validations/auth.js";
-import {signAccessToken, signRefreshToken} from "../utilities/helpers/token.js";
+import {signAccessToken, signRefreshToken, verifyRefreshToken} from "../utilities/helpers/token.js";
 
 
 const postRegister = async (req, res, next) => {
@@ -50,11 +50,11 @@ const postLogin = async (req, res, next) => {
 
         const user = await UserModel.findOne({emailAddress: result.emailAddress});
 
-        if(!user) throw createError.NotFound("user not registered");
+        if (!user) throw createError.NotFound("user not registered");
 
         const isMatch = await user.isValidPassword(result.password);
 
-        if(!isMatch) throw createError.Unauthorized('email address or password not valid');
+        if (!isMatch) throw createError.Unauthorized('email address or password not valid');
 
         const accessToken = await signAccessToken(user.id);
         const refreshToken = await signRefreshToken(user.id);
@@ -81,11 +81,23 @@ const postLogout = async (req, res) => {
     }
 };
 
-const postRefreshToken = async (req, res) => {
+const postRefreshToken = async (req, res, next) => {
     try {
+        const {refreshToken} = req.body;
 
+        if(!refreshToken) throw createError.BadRequest();
+
+        const userId = await verifyRefreshToken(refreshToken);
+
+        const newAccessToken = await signAccessToken(userId);
+        const newRefreshToken = await signRefreshToken(userId);
+
+        res.send({
+           accessToken : newAccessToken,
+           refreshToken : newRefreshToken,
+        });
     } catch (error) {
-
+        next(error);
     }
 }
 
