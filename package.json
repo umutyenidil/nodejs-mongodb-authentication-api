@@ -20,6 +20,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.3",
     "morgan": "^1.10.0",
+    "redis": "^4.6.12",
     "validator": "^13.11.0"
   },
   "devDependencies": {

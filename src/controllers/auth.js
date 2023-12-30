@@ -4,6 +4,8 @@ import UserModel from "../models/user/user.js";
 import validationErrorHandler from "../utilities/error-handlers/validation.js";
 import userValidation from "../utilities/validations/auth.js";
 import {signAccessToken, signRefreshToken, verifyRefreshToken} from "../utilities/helpers/token.js";
+import {client as redisClient} from "../utilities/initializers/redis.js";
+import redis from "redis";
 
 
 const postRegister = async (req, res, next) => {
@@ -73,11 +75,25 @@ const postLogin = async (req, res, next) => {
     }
 };
 
-const postLogout = async (req, res) => {
+const postLogout = async (req, res, next) => {
     try {
+        const {refreshToken} = req.body;
+        if (!refreshToken) throw createError.BadRequest();
+
+        const userId = await verifyRefreshToken(refreshToken);
+
+        redisClient.DEL(userId, (err, val)=>{
+           if(err){
+               console.log(err.message);
+               throw createError.InternalServerError();
+           }
+
+           console.log(val);
+           res.sendStatus(204);
+        });
 
     } catch (error) {
-
+        next(error);
     }
 };
 
@@ -85,7 +101,7 @@ const postRefreshToken = async (req, res, next) => {
     try {
         const {refreshToken} = req.body;
 
-        if(!refreshToken) throw createError.BadRequest();
+        if (!refreshToken) throw createError.BadRequest();
 
         const userId = await verifyRefreshToken(refreshToken);
 
@@ -93,8 +109,8 @@ const postRefreshToken = async (req, res, next) => {
         const newRefreshToken = await signRefreshToken(userId);
 
         res.send({
-           accessToken : newAccessToken,
-           refreshToken : newRefreshToken,
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken,
         });
     } catch (error) {
         next(error);
