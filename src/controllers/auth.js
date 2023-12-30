@@ -3,16 +3,14 @@ import createError from "http-errors";
 import UserModel from "../models/user/user.js";
 import validationErrorHandler from "../utilities/error-handlers/validation.js";
 import userValidation from "../utilities/validations/auth.js";
-import {generateSignAccessToken} from "../utilities/helpers/token.js";
+import {signAccessToken, signRefreshToken} from "../utilities/helpers/token.js";
 
 
 const postRegister = async (req, res, next) => {
     try {
         const {emailAddress, password} = req.body;
 
-        // if (!emailAddress || !password) throw createError.BadRequest();
         const validationResult = await userValidation.registerValidator.validateAsync(req.body);
-        console.log(validationResult);
 
         const doesExists = await UserModel.findOne({emailAddress: emailAddress});
 
@@ -25,10 +23,12 @@ const postRegister = async (req, res, next) => {
 
         const user = await newUser.save();
 
-        const accessToken = await generateSignAccessToken(user.id);
+        const accessToken = await signAccessToken(user.id);
+        const refreshToken = await signRefreshToken(user.id);
 
         return res.status(201).json({
             accessToken,
+            refreshToken,
         });
     } catch (error) {
         // const validationErrors = validationErrorHandler(error);
@@ -56,9 +56,13 @@ const postLogin = async (req, res, next) => {
 
         if(!isMatch) throw createError.Unauthorized('email address or password not valid');
 
-        const accessToken = await generateSignAccessToken(user.id);
+        const accessToken = await signAccessToken(user.id);
+        const refreshToken = await signRefreshToken(user.id);
 
-        res.send({accessToken});
+        res.send({
+            accessToken,
+            refreshToken,
+        });
 
     } catch (error) {
         if (error.isJoi === true) {
